@@ -71,7 +71,7 @@ export default defineConfig({
 				}),
 			],
 			editLink: {
-				baseUrl: 'https://github.com/vic/import-tree/edit/main/docs/',
+				baseUrl: 'https://github.com/denful/import-tree/edit/main/docs/',
 			},
 			customCss: [
 				'./src/styles/custom.css'

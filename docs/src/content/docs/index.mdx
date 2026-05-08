@@ -18,7 +18,7 @@ hero:
       link: /motivation/
       variant: minimal
     - text: Source Code
-      link: https://github.com/vic/import-tree
+      link: https://github.com/denful/import-tree
       icon: github
       variant: secondary
 ---
@@ -32,7 +32,7 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 ```nix
 # In your flake.nix — import every .nix file under ./modules
 {
-  inputs.import-tree.url = "github:vic/import-tree";
+  inputs.import-tree.url = "github:denful/import-tree";
   inputs.flake-parts.url = "github:hercules-ci/flake-parts";
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; }

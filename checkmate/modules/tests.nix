@@ -1,9 +1,9 @@
 # If formatting fails, run
-#   nix run github:vic/checkmate#checkmate-treefmt
+#   nix run github:denful/checkmate#checkmate-treefmt
 #
 { inputs, lib, ... }:
 let
-  # since we are tested by github:vic/checkmate
+  # since we are tested by github:denful/checkmate
   it = inputs.target;
   lit = it.withLib lib;
 in

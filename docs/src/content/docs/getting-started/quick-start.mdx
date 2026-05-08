@@ -14,7 +14,7 @@ Add `import-tree` to your flake inputs:
 
 ```nix
 {
-  inputs.import-tree.url = "github:vic/import-tree";
+  inputs.import-tree.url = "github:denful/import-tree";
 }
 ```
 
@@ -26,7 +26,7 @@ Import directly from a pinned source:
 ```nix
 let
   import-tree = import (builtins.fetchTarball {
-    url = "https://github.com/vic/import-tree/archive/main.tar.gz";
+    url = "https://github.com/denful/import-tree/archive/main.tar.gz";
   });
 in
 # use import-tree
@@ -51,7 +51,7 @@ The most common pattern — import all modules from a directory as flake-parts m
 
 ```nix
 {
-  inputs.import-tree.url = "github:vic/import-tree";
+  inputs.import-tree.url = "github:denful/import-tree";
   inputs.flake-parts.url = "github:hercules-ci/flake-parts";
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; }

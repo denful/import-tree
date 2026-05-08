@@ -46,7 +46,7 @@ With flake-parts, each file is a flake-parts module:
 ```nix
 # flake.nix
 {
-  inputs.import-tree.url = "github:vic/import-tree";
+  inputs.import-tree.url = "github:denful/import-tree";
   inputs.flake-parts.url = "github:hercules-ci/flake-parts";
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; }
