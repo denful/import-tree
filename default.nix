@@ -7,6 +7,7 @@ let
       filterf,
       mapf,
       paths,
+      scoped,
       ...
     }:
     path:
@@ -23,8 +24,18 @@ let
       module =
         { lib, ... }:
         {
-          imports = leafs lib path;
+          imports = (if scoped == { } then leafs else scoped-leafs) lib path;
         };
+
+      scoped-leafs =
+        lib: root:
+        map (builtins.scopedImport (
+          {
+            inherit builtins;
+            __nixPath = [ ];
+          }
+          // scoped
+        )) (leafs lib root);
 
       leafs =
         lib:
@@ -144,6 +155,7 @@ let
         mapf = (i: i);
         filterf = _: true;
         paths = [ ];
+        scoped = { };
 
         # config is our state (initial at first). this functor allows it
         # to work as if it was a function, taking an update function
@@ -175,6 +187,7 @@ let
             match = regex: accAttr "filterf" (and (matchesRegex regex));
             matchNot = regex: accAttr "filterf" (andNot (matchesRegex regex));
             map = mapf: accAttr "mapf" (compose mapf);
+            addScoped = attrs: accAttr "scoped" (s: s // attrs);
             addPath = path: accAttr "paths" (p: p ++ [ path ]);
             addAPI = api: accAttr "api" (a: a // api);
 

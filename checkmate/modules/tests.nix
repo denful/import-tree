@@ -260,6 +260,16 @@ in
           expr = lit.leafs ../tree/a/b/_c;
           expected = [ ../tree/a/b/_c/d/e.nix ];
         };
+
+        scoped."test adds attrs via scopedImport" = {
+          expr =
+            (lib.evalModules {
+              modules = [
+                ((lit.addScoped { foo = 22; }) ../tree/_scoped)
+              ];
+            }).config.foo;
+          expected = 22;
+        };
       };
 
     }
