@@ -270,6 +270,11 @@ in
             }).config.foo;
           expected = 22;
         };
+
+        combinator."test combinator syntax to compose import-tree" = {
+          expr = it (it: it.withLib lib) (it: it.leafs) ../tree/_scoped;
+          expected = [ ../tree/_scoped/foo.nix ];
+        };
       };
 
     }

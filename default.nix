@@ -23,19 +23,21 @@ let
       # module exists so we delay access to lib til we are part of the module system.
       module =
         { lib, ... }:
+        let
+          files = leafs lib path;
+          imports = if scoped == { } then files else map scoped-import files;
+        in
         {
-          imports = (if scoped == { } then leafs else scoped-leafs) lib path;
+          inherit imports;
         };
 
-      scoped-leafs =
-        lib: root:
-        map (builtins.scopedImport (
-          {
-            inherit builtins;
-            __nixPath = [ ];
-          }
-          // scoped
-        )) (leafs lib root);
+      scoped-import = builtins.scopedImport (
+        {
+          inherit builtins;
+          __nixPath = [ ];
+        }
+        // scoped
+      );
 
       leafs =
         lib:
@@ -145,7 +147,12 @@ let
 
   inModuleEval = and (x: x ? options) builtins.isAttrs;
 
-  functor = self: arg: perform self.__config (if inModuleEval arg then [ ] else arg);
+  functor =
+    self: arg:
+    if builtins.isFunction arg && builtins.functionArgs arg == { } then
+      arg self # arg is a combinator pass the self import-tree obj
+    else
+      perform self.__config (if inModuleEval arg then [ ] else arg);
 
   callable =
     let
