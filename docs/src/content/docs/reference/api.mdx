@@ -18,7 +18,7 @@ inputs.import-tree.url = "github:denful/import-tree";
 let import-tree = import ./path-to/import-tree;
 ```
 
-The resulting value is a callable attrset — the primary `import-tree` object.
+The resulting value is a callable attrset - the primary `import-tree` object.
 
 ---
 
@@ -54,7 +54,7 @@ Non-path values (like attrsets) are passed through the filter and included if th
 
 ### `.filter <fn>`
 
-`fn : string -> bool` — only include paths where `fn` returns `true`.
+`fn : string -> bool` - only include paths where `fn` returns `true`.
 
 ```nix
 import-tree.filter (lib.hasInfix ".mod.") ./modules
@@ -64,7 +64,7 @@ Multiple `.filter` calls compose with AND.
 
 ### `.filterNot <fn>`
 
-Inverse of `.filter` — exclude paths where `fn` returns `true`.
+Inverse of `.filter` - exclude paths where `fn` returns `true`.
 
 ```nix
 import-tree.filterNot (lib.hasInfix "experimental") ./modules
@@ -105,7 +105,7 @@ Also applies to non-path items in import lists.
 
 ### `.map <fn>`
 
-`fn : path -> a` — transform each discovered path.
+`fn : path -> a` - transform each discovered path.
 
 ```nix
 import-tree.map lib.traceVal ./modules        # trace each path
@@ -143,7 +143,35 @@ import-tree.addAPI {
 }
 ```
 
-Methods are late-bound — you can reference methods added in later `.addAPI` calls.
+Methods are late-bound - you can reference methods added in later `.addAPI` calls.
+
+## Scoped Imports
+
+### `.addScoped <attrset>`
+
+Add attributes to the scope passed to imported modules. Enables direct access to custom variables inside imports:
+
+```nix
+import-tree.addScoped { foo = 42; mylib = lib; } ./modules
+# modules can now use `foo` and `mylib` directly
+```
+
+The provided attributes are merged into the scope used by `builtins.scopedImport`:
+
+```nix
+# module.nix - can reference scoped values directly
+{
+  config.myValue = foo;
+  config.libResult = mylib.version;
+}
+```
+
+Multiple `.addScoped` calls accumulate:
+
+```nix
+import-tree (it: it.addScoped { foo = 42 }) (it: it.addScoped { bar = 99 })
+# modules can access both foo and bar
+```
 
 ---
 
@@ -193,7 +221,7 @@ Evaluate with an empty path list. Equivalent to calling with `[]`:
 
 ### `.new`
 
-Returns a fresh import-tree with empty state — no paths, filters, maps, or API extensions.
+Returns a fresh import-tree with empty state - no paths, filters, maps, or API extensions.
 
 ```nix
 configured-tree.new  # back to a clean slate

@@ -50,23 +50,21 @@ import-tree.match ".*/[a-z]+_[a-z]+\.nix" ./modules
 ## Pipeline Style
 
 ```nix
-lib.pipe import-tree [
+import-tree
   (i: i.filter (lib.hasInfix "/desktop/"))
   (i: i.map lib.traceVal)
   (i: i ./modules)
-]
 ```
 
 ## Non-Nix File Discovery
 
 ```nix
-lib.pipe import-tree [
+import-tree
   (i: i.initFilter (lib.hasSuffix ".json"))
   (i: i.map builtins.readFile)
   (i: i.map builtins.fromJSON)
   (i: i.withLib lib)
   (i: i.leafs ./config)
-]
 # => list of parsed JSON objects
 ```
 
@@ -74,14 +72,13 @@ lib.pipe import-tree [
 
 ```nix
 let
-  my-tree = lib.pipe import-tree [
+  my-tree = import-tree
     (i: i.addPath ./modules)
     (i: i.addAPI {
       desktop = self: self.filter (lib.hasInfix "/desktop/");
       server  = self: self.filter (lib.hasInfix "/server/");
       all     = self: self;
-    })
-  ];
+    });
 in {
   # Use the desktop subset
   imports = [ my-tree.desktop ];

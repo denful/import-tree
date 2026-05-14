@@ -1,11 +1,23 @@
 on:
-  pull_request:
   push:
     branches: [main]
+  pull_request:
+    types: [labeled, opened, synchronize, reopened, review_requested, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  NIX_PATH: "nixpkgs=https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz"
 jobs:
-  flake-check:
-    name: nix flake check
+  test:
+    name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: cachix/install-nix-action@v30
-      - run: nix flake check -L github:vic/checkmate --override-input target github:$GITHUB_REPOSITORY/$GITHUB_SHA
+      - uses: wimpysworld/nothing-but-nix@main
+      - uses: cachix/install-nix-action@v31
+      - uses: DeterminateSystems/magic-nix-cache-action@v13
+      - uses: actions/checkout@v6
+      - run: nix-shell ./shell.nix --run 'just ci'
+

@@ -46,6 +46,7 @@ export default defineConfig({
 						{ label: 'Filtering Files', slug: 'guides/filtering' },
 						{ label: 'Transforming Paths', slug: 'guides/mapping' },
 						{ label: 'Custom API', slug: 'guides/custom-api' },
+						{ label: 'Combinator Syntax', slug: 'guides/combinator' },
 						{ label: 'Outside Modules', slug: 'guides/outside-modules' },
 						{ label: 'Dendritic Pattern', slug: 'guides/dendritic' },
 					],

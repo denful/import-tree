@@ -1,0 +1,94 @@
+---
+title: Combinator Syntax
+description: Compose import-tree configurations using function combinators for clean, terse syntax.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## What is Combinator Syntax?
+
+Combinator syntax allows you to pass functions to `import-tree` to configure and immediately use it, reducing boilerplate and enabling fluent composition:
+
+```nix
+# Without combinators (verbose)
+let
+  configured = import-tree.withLib lib;
+  leafs = configured.leafs;
+in
+leafs ./modules
+
+# With combinators (terse)
+import-tree (it: it.withLib lib) (it: it.leafs) ./modules
+```
+
+## How It Works
+
+When you call `import-tree` with a function (a zero-argument function), it receives the current import-tree object and can call any methods on it:
+
+```nix
+import-tree (self: self.withLib lib)
+```
+
+The function is applied, and the result replaces the state. You can chain multiple functions:
+
+```nix
+import-tree 
+  (it: it.withLib lib)           # first: add lib
+  (it: it.addPath ./modules)     # second: add path
+  (it: it.filter (lib.hasSuffix "mod.nix"))  # third: filter
+  ./src                          # finally: evaluate
+```
+
+This is purely syntactic sugar - it's equivalent to piping through the operations in order.
+
+## Real-World Examples
+
+### Filtered List with Combinator
+
+Get a filtered file list in one expression:
+
+
+```nix
+import-tree
+  (it: it.withLib lib)
+  (it: it.filter (lib.hasSuffix "mod.nix"))
+  (it: it.leafs)
+  ./modules
+```
+
+### With Scoped Imports
+
+```nix
+import-tree
+  (it: it.addScoped { helpers = my-utils; })
+  ./modules
+```
+
+### Using Custom API
+
+Combinators work with custom API methods:
+
+```nix
+let
+  custom = import-tree.addAPI {
+    nixFilesOnly = self: self.match ".*\\.nix$";
+  };
+in
+custom
+  (it: it.nixFilesOnly)
+  (it: it.leafs)
+  ./src
+```
+
+## When to Use
+
+<Aside type="tip">
+Use combinators when you're building a temporary configuration that's only used once. For reusable configurations, `.addAPI` is often clearer.
+</Aside>
+
+Combinators shine for:
+- One-off file discovery in scripts
+- Building configurations inline without intermediate variables
+- Chaining multiple small transformations
+
+For complex, reusable patterns, consider instead building domain-specific methods with `.addAPI`.

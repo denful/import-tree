@@ -27,7 +27,7 @@ extended.minimal ./src
 
 ## Preserving Previous Extensions
 
-Calling `.addAPI` multiple times is cumulative — previous extensions are preserved:
+Calling `.addAPI` multiple times is cumulative - previous extensions are preserved:
 
 ```nix
 let
@@ -39,7 +39,7 @@ second.foo.files  # still works
 
 ## Late Binding
 
-API methods are late-bound. You can reference methods that don't exist yet — they resolve when actually called:
+API methods are late-bound. You can reference methods that don't exist yet - they resolve when actually called:
 
 ```nix
 let
@@ -54,7 +54,7 @@ This enables building APIs incrementally across multiple `.addAPI` calls.
 ## Real-World Example: Module Distribution
 
 <Aside type="tip">
-This pattern enables community-driven module distributions — think editor plugin sets, server presets, or infrastructure templates.
+This pattern enables community-driven module distributions - think editor plugin sets, server presets, or infrastructure templates.
 </Aside>
 
 A library author can ship a pre-configured import-tree with domain-specific methods:
@@ -67,14 +67,14 @@ let
   off = self: flag: self.filterNot (lib.hasInfix "+${flag}");
   exclusive = self: onFlag: offFlag: (on self onFlag) |> (s: off s offFlag);
 in {
-  flake.lib.modules-tree = lib.pipe inputs.import-tree [
+  flake.lib.modules-tree = inputs.import-tree
     (i: i.addPath ./modules)
     (i: i.addAPI { inherit on off exclusive; })
     (i: i.addAPI { ruby = self: self.on "ruby"; })
     (i: i.addAPI { python = self: self.on "python"; })
     (i: i.addAPI { old-school = self: self.off "copilot"; })
     (i: i.addAPI { vim-btw = self: self.exclusive "vim" "emacs"; })
-  ];
+    ;
 }
 ```
 

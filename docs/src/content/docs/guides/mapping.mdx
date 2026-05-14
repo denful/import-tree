@@ -19,32 +19,31 @@ import-tree.map (path: { imports = [ path ]; }) ./modules
 import-tree.map lib.traceVal ./modules
 ```
 
-This prints each discovered path during evaluation — useful for debugging.
+This prints each discovered path during evaluation - useful for debugging.
 
 ### Composing Maps
 
 Multiple `.map` calls compose left-to-right (the first map runs first):
 
 ```nix
-lib.pipe import-tree [
+import-tree
   (i: i.map import)             # import each .nix file
   (i: i.map builtins.stringLength) # get the length of each result
   (i: i.withLib lib)
   (i: i.leafs ./dir)
-]
 ```
 
 ### Using map Outside Module Evaluation
 
-When used with `.leafs` or `.pipeTo`, `.map` transforms paths into arbitrary values — not just modules:
+When used with `.leafs` or `.pipeTo`, `.map` transforms paths into arbitrary values - not just modules:
 
 ```nix
 # Read all .md files under a directory
-lib.pipe import-tree [
+import-tree
   (i: i.initFilter (lib.hasSuffix ".md"))
   (i: i.map builtins.readFile)
   (i: i.withLib lib)
   (i: i.leafs ./docs)
-]
+
 # => [ "# Title\n..." "# Other\n..." ]
 ```

@@ -38,7 +38,7 @@ Add a file to `./modules/` and it is automatically discovered. Reorganize freely
 
 ## Dendritic Pattern
 
-The [Dendritic pattern](https://github.com/mightyiam/dendritic) — where each file is a self-contained module — was the original inspiration for `import-tree`.
+The [Dendritic pattern](https://github.com/mightyiam/dendritic) - where each file is a self-contained module - was the original inspiration for `import-tree`.
 
 <Aside type="tip">
 See [@mightyiam's post](https://discourse.nixos.org/t/pattern-each-file-is-a-flake-parts-module/61271),
@@ -47,16 +47,16 @@ See [@mightyiam's post](https://discourse.nixos.org/t/pattern-each-file-is-a-fla
 for more on Dendritic setups.
 </Aside>
 
-With Dendritic, your configuration becomes a file tree — each concern in its own file, each file a module. `import-tree` removes the glue code that would otherwise connect them.
+With Dendritic, your configuration becomes a file tree - each concern in its own file, each file a module. `import-tree` removes the glue code that would otherwise connect them.
 
 ## Beyond Loading Files
 
 `import-tree` is not just a file loader. Its builder API lets you:
 
-- **Filter** which files are selected — by predicate, regex, or both.
-- **Transform** discovered paths — wrap them in custom modules, read their contents, or anything else.
+- **Filter** which files are selected - by predicate, regex, or both.
+- **Transform** discovered paths - wrap them in custom modules, read their contents, or anything else.
 - **Compose** multiple directory trees with shared filters.
-- **Extend** with domain-specific APIs — let library authors ship curated import-tree instances.
+- **Extend** with domain-specific APIs - let library authors ship curated import-tree instances.
 
 This makes `import-tree` useful for sharing pre-configured sets of modules across projects. Library authors can ship an `import-tree` instance with custom filters and API methods, and consumers pick what they need:
 
@@ -73,7 +73,7 @@ lib.modules-tree = import-tree.addAPI {
 
 ## Design Goals
 
-- **Zero dependencies** — a single `default.nix`, no extra flake inputs
-- **Works everywhere** — flakes, non-flakes, any module system
-- **Composable** — builder pattern with filter/map/extend chains
-- **Predictable** — sensible defaults, clear ignore rules, no magic
+- **Zero dependencies** - a single `default.nix`, no extra flake inputs
+- **Works everywhere** - flakes, non-flakes, any module system
+- **Composable** - builder pattern with filter/map/extend chains
+- **Predictable** - sensible defaults, clear ignore rules, no magic

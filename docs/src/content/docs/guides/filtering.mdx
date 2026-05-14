@@ -23,7 +23,7 @@ You can narrow this down with filters, or replace the defaults entirely.
 import-tree.filter (lib.hasInfix ".mod.") ./modules
 ```
 
-`filterNot` is the inverse — exclude files matching the predicate:
+`filterNot` is the inverse - exclude files matching the predicate:
 
 ```nix
 # Skip any file with "experimental" in the path
@@ -32,14 +32,13 @@ import-tree.filterNot (lib.hasInfix "experimental") ./modules
 
 ### Composing Filters
 
-Multiple filters combine with logical AND — a file must pass **all** of them:
+Multiple filters combine with logical AND - a file must pass **all** of them:
 
 ```nix
-lib.pipe import-tree [
+import-tree
   (i: i.filter (lib.hasInfix "/desktop/"))
   (i: i.filter (lib.hasSuffix "bar.nix"))
   (i: i ./modules)
-]
 ```
 
 This selects only files under a `desktop/` directory whose name ends in `bar.nix`.
@@ -74,7 +73,7 @@ All filter types compose together:
 
 This finds files matching the regex **and** containing `/src/` in their path.
 
-## initFilter — Replacing Defaults
+## initFilter - Replacing Defaults
 
 `initFilter` **replaces** the built-in `.nix` + no-`/_` filter entirely. Use it to discover non-Nix files or change the ignore convention:
 

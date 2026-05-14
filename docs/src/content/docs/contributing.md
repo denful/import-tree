@@ -7,23 +7,23 @@ All contributions are welcome. PRs are checked by CI.
 
 ## Run Tests
 
-`import-tree` uses [checkmate](https://github.com/denful/checkmate) for testing:
+Load development environment from `./shell.nix`
 
 ```sh
-nix flake check github:denful/checkmate --override-input target path:.
+just ci
 ```
 
 ## Format Code
 
 ```sh
-nix run github:denful/checkmate#fmt
+just fmt
 ```
 
 ## Bug Reports
 
 Open an [issue](https://github.com/denful/import-tree/issues) with a minimal reproduction.
 
-If possible, include a failing test case — the test suite is in `checkmate/modules/tests.nix` and the test tree fixtures are in `checkmate/tree/`.
+If possible, include a failing test case: the test suite is in `tests.nix` and the test tree fixtures are in `tree/`.
 
 ## Documentation
 
@@ -32,5 +32,5 @@ The documentation site lives under `./docs/`. It uses [Starlight](https://starli
 To run locally:
 
 ```sh
-cd docs && pnpm install && pnpm run dev
+just docs
 ```

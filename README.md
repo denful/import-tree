@@ -83,8 +83,7 @@ with-inputs outputs
 
 ## Testing
 
-`import-tree` uses [`checkmate`](https://github.com/denful/checkmate) for testing:
 
 ```sh
-nix flake check github:denful/checkmate --override-input target path:.
+nix-shell ./shell.nix --run 'just ci'
 ```

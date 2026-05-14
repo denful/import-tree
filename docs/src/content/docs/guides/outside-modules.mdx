@@ -34,14 +34,13 @@ Omitting `.withLib` when calling `.leafs` produces an error:
 
 ### files
 
-`.files` is a shortcut for `.leafs.result` — returns the list directly when paths have already been added via `.addPath`:
+`.files` is a shortcut for `.leafs.result`: returns the list directly when paths have already been added via `.addPath`:
 
 ```nix
-lib.pipe import-tree [
+import-tree 
   (i: i.addPath ./modules)
   (i: i.withLib lib)
   (i: i.files)
-]
 ```
 
 ### pipeTo
@@ -49,24 +48,23 @@ lib.pipe import-tree [
 `.pipeTo` takes a function that receives the list of discovered paths, letting you process the results:
 
 ```nix
-(import-tree.withLib lib).pipeTo builtins.length ./modules
+import-tree (it: it.withLib lib) (it: it.pipeTo builtins.length) ./modules
 # => 5  (number of .nix files)
 ```
 
 Combine with `.map` for powerful pipelines:
 
 ```nix
-lib.pipe import-tree [
+import-tree
   (i: i.map import)
   (i: i.pipeTo lib.length)
   (i: i.withLib lib)
   (i: i ./modules)
-]
 ```
 
 ### result
 
-`.result` evaluates the import-tree with an empty path list — useful when paths are already configured via `.addPath`:
+`.result` evaluates the import-tree with an empty path list, useful when paths are already configured via `.addPath`:
 
 ```nix
 (import-tree.addPath ./modules).result

@@ -1,15 +1,18 @@
-system := `nix-instantiate --eval --raw -E builtins.currentSystem`
-
 help:
   just -l
 
-ci:
-  just fmt -- --ci --no-cache
-  just test
+docs:
+  cd docs && pnpm run dev
+
+zerover:
+  echo "obase=2; $(date +%s)" | bc
 
 fmt *args:
-  nix run github:denful/checkmate#fmt --override-input target path:. -L {{args}}
+  treefmt {{args}}
 
-test *args:
-  nix flake check github:denful/checkmate --override-input target . -L {{args}}
+ci:
+  just fmt --ci --no-cache
+  just test
 
+test suite="all" *args:
+  nix-unit --expr 'let x = import ./tests.nix; in if "{{suite}}" == "all" then x else x.{{suite}}' {{args}}
