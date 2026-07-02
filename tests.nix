@@ -1,16 +1,22 @@
 let
   lib = import <nixpkgs/lib>;
   it = import ./.;
+  # withLib is now a no-op (the tree reader is pure builtins), so `lit == it`.
+  # Kept so these tests also exercise the backward-compat shim.
   lit = it.withLib lib;
 in
 {
   import-tree = {
-    leafs."test fails if no lib has been set" = {
-      expr = it.leafs ./tree;
-      expectedError.type = "ThrownError";
+    leafs."test works without withLib (lib no longer required)" = {
+      expr = it.leafs ./tree/a;
+      expected = [
+        ./tree/a/a_b.nix
+        ./tree/a/b/b_a.nix
+        ./tree/a/b/m.nix
+      ];
     };
 
-    leafs."test succeeds when lib has been set" = {
+    leafs."test withLib is a no-op kept for backward compatibility" = {
       expr = (it.withLib lib).leafs ./tree/hello;
       expected = [ ];
     };

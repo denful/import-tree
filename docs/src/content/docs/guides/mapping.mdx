@@ -29,7 +29,6 @@ Multiple `.map` calls compose left-to-right (the first map runs first):
 import-tree
   (i: i.map import)             # import each .nix file
   (i: i.map builtins.stringLength) # get the length of each result
-  (i: i.withLib lib)
   (i: i.leafs ./dir)
 ```
 
@@ -42,7 +41,6 @@ When used with `.leafs` or `.pipeTo`, `.map` transforms paths into arbitrary val
 import-tree
   (i: i.initFilter (lib.hasSuffix ".md"))
   (i: i.map builtins.readFile)
-  (i: i.withLib lib)
   (i: i.leafs ./docs)
 
 # => [ "# Title\n..." "# Other\n..." ]

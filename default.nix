@@ -1,7 +1,6 @@
 let
   perform =
     {
-      lib ? null,
       pipef ? null,
       initf ? null,
       filterf,
@@ -12,23 +11,19 @@ let
     }:
     path:
     let
-      result =
-        if pipef == null then
-          { imports = [ module ]; }
-        else if lib == null then
-          throw "You need to call withLib before trying to read the tree."
-        else
-          pipef (leafs lib path);
+      result = if pipef == null then { imports = [ module ]; } else pipef (leafs path);
 
-      # module exists so we delay access to lib til we are part of the module system.
+      # module stays a function: callers may apply it as a module function, and
+      # keeping it a lambda defers the tree read (`leafs path`) until module-eval
+      # rather than at `it ./dir` construction time. It no longer needs `lib` —
+      # the reader is pure `builtins` — so the argument is ignored.
       module =
-        { lib, ... }:
+        _:
         let
-          files = leafs lib path;
-          imports = if scoped == { } then files else map scoped-import files;
+          files = leafs path;
         in
         {
-          inherit imports;
+          imports = if scoped == { } then files else map scoped-import files;
         };
 
       scoped-import = builtins.scopedImport (
@@ -40,22 +35,19 @@ let
       );
 
       leafs =
-        lib:
         let
-          treeFiles = t: (t.withLib lib).files;
-
           listFilesRecursive =
             x:
             if isImportTree x then
-              treeFiles x
+              x.files
             else if hasOutPath x then
               listFilesRecursive x.outPath
             else if isDirectory x then
-              lib.filesystem.listFilesRecursive x
+              listDirFilesRecursive x
             else
               [ x ];
 
-          nixFilter = andNot (lib.hasInfix "/_") (lib.hasSuffix ".nix");
+          nixFilter = andNot (hasInfix "/_") (hasSuffix ".nix");
 
           initialFilter = if initf != null then initf else nixFilter;
 
@@ -68,31 +60,31 @@ let
           isFileRelative =
             root:
             { file, rel }:
-            if file != null && lib.hasPrefix root file then
+            if file != null && hasPrefix root file then
               {
                 file = null;
-                rel = lib.removePrefix root file;
+                rel = removePrefix root file;
               }
             else
               { inherit file rel; };
           getFileRelative = { file, rel }: if rel == null then file else rel;
 
+          # Strip the first matching root-directory prefix from a file, yielding a
+          # path relative to that root (or the file itself if none match). Folds the
+          # `{ file, rel }` state directly over the roots — once a root matches,
+          # `file` becomes null and later roots are no-ops.
           makeRelative =
             roots:
-            lib.pipe roots [
-              (lib.lists.flatten)
-              (builtins.filter isDirectory)
-              (builtins.map builtins.toString)
-              (builtins.map isFileRelative)
-              (fx: fx ++ [ getFileRelative ])
-              (
-                fx: file:
-                lib.pipe {
-                  file = builtins.toString file;
-                  rel = null;
-                } fx
-              )
-            ];
+            let
+              dirs = builtins.map builtins.toString (builtins.filter isDirectory (flatten roots));
+            in
+            file:
+            getFileRelative (
+              builtins.foldl' (acc: root: isFileRelative root acc) {
+                file = builtins.toString file;
+                rel = null;
+              } dirs
+            );
 
           rootRelative =
             roots:
@@ -102,23 +94,77 @@ let
             x: if isPathLike x then mkRel x else x;
         in
         root:
-        lib.pipe
-          [ paths root ]
-          [
-            (lib.lists.flatten)
-            (map listFilesRecursive)
-            (lib.lists.flatten)
-            (builtins.filter (
-              compose filter (rootRelative [
-                paths
-                root
-              ])
-            ))
-            (map mapf)
+        let
+          roots = flatten [
+            paths
+            root
           ];
+          files = flatten (map listFilesRecursive roots);
+          relativize = rootRelative [
+            paths
+            root
+          ];
+        in
+        map mapf (builtins.filter (compose filter relativize) files);
 
     in
     result;
+
+  # ── utilities vendored from nixpkgs lib (behavior-identical, pure builtins) ──
+
+  # lib.lists.flatten
+  flatten = x: if builtins.isList x then builtins.concatMap flatten x else [ x ];
+
+  # lib.strings.hasPrefix
+  hasPrefix = pre: s: builtins.substring 0 (builtins.stringLength pre) s == pre;
+
+  # lib.strings.removePrefix
+  removePrefix =
+    pre: s:
+    let
+      n = builtins.stringLength pre;
+    in
+    if builtins.substring 0 n s == pre then builtins.substring n (builtins.stringLength s - n) s else s;
+
+  # lib.strings.hasSuffix
+  hasSuffix =
+    suffix: content:
+    let
+      lenSuffix = builtins.stringLength suffix;
+      lenContent = builtins.stringLength content;
+    in
+    lenContent >= lenSuffix && builtins.substring (lenContent - lenSuffix) lenContent content == suffix;
+
+  # lib.strings.hasInfix — literal substring scan (no regex, so no escaping hazard)
+  hasInfix =
+    infix: content:
+    let
+      lenInfix = builtins.stringLength infix;
+      lenContent = builtins.stringLength content;
+      go =
+        i:
+        if i + lenInfix > lenContent then
+          false
+        else if builtins.substring i lenInfix content == infix then
+          true
+        else
+          go (i + 1);
+    in
+    go 0;
+
+  # lib.filesystem.listFilesRecursive
+  listDirFilesRecursive =
+    dir:
+    let
+      entries = builtins.readDir dir;
+    in
+    builtins.concatMap (
+      name:
+      if entries.${name} == "directory" then
+        listDirFilesRecursive (dir + "/${name}")
+      else
+        [ (dir + "/${name}") ]
+    ) (builtins.attrNames entries);
 
   compose =
     g: f: x:
@@ -199,7 +245,9 @@ let
             addAPI = api: accAttr "api" (a: a // api);
 
             # Configuration updates (non-accumulating)
-            withLib = lib: mergeAttrs { inherit lib; };
+            # withLib is retained as a no-op for backward compatibility: the tree
+            # reader no longer needs nixpkgs lib, so any passed lib is ignored.
+            withLib = _lib: mergeAttrs { };
             initFilter = initf: mergeAttrs { inherit initf; };
             pipeTo = pipef: mergeAttrs { inherit pipef; };
             leafs = mergeAttrs { pipef = (i: i); };

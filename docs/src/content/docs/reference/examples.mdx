@@ -63,7 +63,6 @@ import-tree
   (i: i.initFilter (lib.hasSuffix ".json"))
   (i: i.map builtins.readFile)
   (i: i.map builtins.fromJSON)
-  (i: i.withLib lib)
   (i: i.leafs ./config)
 # => list of parsed JSON objects
 ```
@@ -91,7 +90,7 @@ in {
 ## Counting Files
 
 ```nix
-(import-tree.withLib lib).pipeTo builtins.length ./modules
+import-tree.pipeTo builtins.length ./modules
 ```
 
 ## Mixing with Manual Imports

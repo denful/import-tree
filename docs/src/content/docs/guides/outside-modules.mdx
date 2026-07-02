@@ -8,27 +8,18 @@ description: Use import-tree to list files programmatically, without importing t
 `import-tree` doesn't have to produce module imports. You can use it to get a plain list of files:
 
 ```nix
-(import-tree.withLib pkgs.lib).leafs ./modules
+import-tree.leafs ./modules
 # => [ /path/to/modules/a.nix /path/to/modules/b.nix ]
 ```
 
-### withLib
-
-Outside module evaluation, `import-tree` needs access to `lib` (specifically `lib.filesystem.listFilesRecursive`). Call `.withLib` before `.leafs` or `.pipeTo`:
-
-```nix
-import-tree.withLib lib
-```
-
-Omitting `.withLib` when calling `.leafs` produces an error:
-`"You need to call withLib before trying to read the tree."`
+The tree reader is implemented with pure `builtins`, so `.leafs`, `.files` and `.pipeTo` work everywhere — including outside module evaluation — with no setup.
 
 ### leafs
 
 `.leafs` returns a configured import-tree that, when given a path, produces a flat list of discovered files:
 
 ```nix
-(import-tree.withLib lib).leafs ./src
+import-tree.leafs ./src
 # => [ ./src/main.nix ./src/utils.nix ]
 ```
 
@@ -39,7 +30,6 @@ Omitting `.withLib` when calling `.leafs` produces an error:
 ```nix
 import-tree 
   (i: i.addPath ./modules)
-  (i: i.withLib lib)
   (i: i.files)
 ```
 
@@ -48,7 +38,7 @@ import-tree
 `.pipeTo` takes a function that receives the list of discovered paths, letting you process the results:
 
 ```nix
-import-tree (it: it.withLib lib) (it: it.pipeTo builtins.length) ./modules
+import-tree.pipeTo builtins.length ./modules
 # => 5  (number of .nix files)
 ```
 
@@ -57,8 +47,7 @@ Combine with `.map` for powerful pipelines:
 ```nix
 import-tree
   (i: i.map import)
-  (i: i.pipeTo lib.length)
-  (i: i.withLib lib)
+  (i: i.pipeTo builtins.length)
   (i: i ./modules)
 ```
 
