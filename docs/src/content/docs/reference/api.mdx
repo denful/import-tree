@@ -177,20 +177,12 @@ import-tree (it: it.addScoped { foo = 42 }) (it: it.addScoped { bar = 99 })
 
 ## Output
 
-### `.withLib <lib>`
-
-Required before `.leafs` or `.pipeTo` when used outside module evaluation. Provides `lib.filesystem.listFilesRecursive`.
-
-```nix
-import-tree.withLib pkgs.lib
-```
-
 ### `.leafs`
 
 Returns a configured import-tree that produces file lists instead of modules:
 
 ```nix
-(import-tree.withLib lib).leafs ./modules
+import-tree.leafs ./modules
 # => [ ./modules/a.nix ./modules/b.nix ]
 ```
 
@@ -199,7 +191,7 @@ Returns a configured import-tree that produces file lists instead of modules:
 Shorthand for `.leafs.result`:
 
 ```nix
-(import-tree.addPath ./modules).withLib lib |>.files
+(import-tree.addPath ./modules).files
 ```
 
 ### `.pipeTo <fn>`
@@ -207,7 +199,7 @@ Shorthand for `.leafs.result`:
 Like `.leafs` but pipes the result list through `fn`:
 
 ```nix
-(import-tree.withLib lib).pipeTo builtins.length ./modules
+import-tree.pipeTo builtins.length ./modules
 # => 3
 ```
 

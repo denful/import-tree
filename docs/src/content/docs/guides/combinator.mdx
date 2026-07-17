@@ -12,13 +12,13 @@ Combinator syntax allows you to pass functions to `import-tree` to configure and
 ```nix
 # Without combinators (verbose)
 let
-  configured = import-tree.withLib lib;
+  configured = import-tree.map import;
   leafs = configured.leafs;
 in
 leafs ./modules
 
 # With combinators (terse)
-import-tree (it: it.withLib lib) (it: it.leafs) ./modules
+import-tree (it: it.map import) (it: it.leafs) ./modules
 ```
 
 ## How It Works
@@ -26,17 +26,16 @@ import-tree (it: it.withLib lib) (it: it.leafs) ./modules
 When you call `import-tree` with a function (a zero-argument function), it receives the current import-tree object and can call any methods on it:
 
 ```nix
-import-tree (self: self.withLib lib)
+import-tree (self: self.addPath ./modules)
 ```
 
 The function is applied, and the result replaces the state. You can chain multiple functions:
 
 ```nix
 import-tree 
-  (it: it.withLib lib)           # first: add lib
-  (it: it.addPath ./modules)     # second: add path
-  (it: it.filter (lib.hasSuffix "mod.nix"))  # third: filter
-  ./src                          # finally: evaluate
+  (it: it.addPath ./modules)                 # first: add a path
+  (it: it.filter (lib.hasSuffix "mod.nix"))  # then: filter
+  ./src                                      # finally: evaluate
 ```
 
 This is purely syntactic sugar - it's equivalent to piping through the operations in order.
@@ -50,7 +49,6 @@ Get a filtered file list in one expression:
 
 ```nix
 import-tree
-  (it: it.withLib lib)
   (it: it.filter (lib.hasSuffix "mod.nix"))
   (it: it.leafs)
   ./modules
