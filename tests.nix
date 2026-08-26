@@ -270,6 +270,44 @@ in
       expected = 22;
     };
 
+    scoped."test access all scoped variable via scopedImport" = {
+      expr =
+        (lib.evalModules {
+          modules = [
+            (
+              (lit.addScoped {
+                foo = 22;
+                bar = "44";
+              })
+              ./tree/_scoped
+            )
+          ];
+        }).config.scoped;
+      expected = {
+        foo = 22;
+        bar = "44";
+      };
+    };
+
+    scoped."test builtins.nixPath and __nixPath are empty via scopedImport" = {
+      expr =
+        let
+          eval = lib.evalModules {
+            modules = [
+              (
+                (lit.addScoped {
+                  foo = 22;
+                  bar = "44";
+                })
+                ./tree/_scoped
+              )
+            ];
+          };
+        in
+        eval.config.nixPath == [ ] && eval.config.__nixPath == [ ];
+      expected = true;
+    };
+
     combinator."test combinator syntax to compose import-tree" = {
       expr = it (it: it.withLib lib) (it: it.leaves) ./tree/_scoped;
       expected = [ ./tree/_scoped/foo.nix ];

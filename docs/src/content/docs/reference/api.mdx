@@ -169,8 +169,19 @@ The provided attributes are merged into the scope used by `builtins.scopedImport
 Multiple `.addScoped` calls accumulate:
 
 ```nix
-import-tree (it: it.addScoped { foo = 42 }) (it: it.addScoped { bar = 99 })
+import-tree (it: it.addScoped { foo = 42 }) (it: it.addScoped { bar = 99 }) ./modules
 # modules can access both foo and bar
+```
+
+Scoped variables can be accessed inside scoped-imported modules as `builtins.scoped`:
+
+```nix
+# module.nix
+{ 
+  imports = [ (import-tree.addScoped (builtins.scoped // { bar = foo; }) ./other-modules) ];
+  # other-modules can now access `bar` directly in addition to `foo` and `mylib`
+}
+
 ```
 
 ---

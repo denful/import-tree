@@ -23,16 +23,32 @@ let
           files = leaves path;
         in
         {
-          imports = if scoped == { } then files else map scoped-import files;
+          imports = if scoped == { } then files else map scoped-import-module files;
         };
 
-      scoped-import = builtins.scopedImport (
-        {
-          inherit builtins;
-          __nixPath = [ ];
-        }
-        // scoped
-      );
+      # Like builtins.scopedImport but:
+      # - include scope argument in builtins as `builtins.scoped`, for potential reuse in nested invocations
+      # - empty `__nixPath` and `builtins.nixPath`
+      scoped-import =
+        scoped:
+        builtins.scopedImport (
+          {
+            builtins = builtins // {
+              nixPath = [ ];
+              inherit scoped;
+            };
+            __nixPath = [ ];
+          }
+          // scoped
+        );
+
+      scoped-import-module = file: {
+        # Let's not lose track of the original file even if scope-imported:
+        _file = file;
+        imports = [
+          (scoped-import scoped file)
+        ];
+      };
 
       leaves =
         let
