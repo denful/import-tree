@@ -189,14 +189,13 @@ in
       expected = [ ./tree/x/y.nix ];
     };
 
-    import-tree."test returns a module with a single imported nested module having leaves" = {
+    import-tree."test returns a lambda-module with nested module having leaves" = {
       expr =
         let
           oneElement = arr: if lib.length arr == 1 then lib.elemAt arr 0 else throw "Expected one element";
-          module = it ./tree/x;
-          inner = (oneElement module.imports) { inherit lib; };
+          module = it ./tree/x { inherit lib; };
         in
-        oneElement inner.imports;
+        oneElement module.imports;
       expected = ./tree/x/y.nix;
     };
 
