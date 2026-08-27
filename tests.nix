@@ -255,6 +255,22 @@ in
       ];
     };
 
+    import-tree."test can be used in submodule" = {
+      expr =
+        (lib.evalModules {
+          modules = [
+            {
+              options.subModule = lib.mkOption {
+                type = lib.types.submodule (lit ./tree/modules/hello-option);
+              };
+              config.subModule = lit ./tree/modules/hello-world;
+            }
+          ];
+        }).config.subModule.hello;
+
+      expected = "world";
+    };
+
     leaves."test loads from hidden directory but excludes sub-hidden" = {
       expr = lit.leaves ./tree/a/b/_c;
       expected = [ ./tree/a/b/_c/d/e.nix ];
