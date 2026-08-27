@@ -11,16 +11,16 @@ let
     }:
     path:
     let
-      result = if pipef == null then { imports = [ module ]; } else pipef (leafs path);
+      result = if pipef == null then { imports = [ module ]; } else pipef (leaves path);
 
       # module stays a function: callers may apply it as a module function, and
-      # keeping it a lambda defers the tree read (`leafs path`) until module-eval
+      # keeping it a lambda defers the tree read (`leaves path`) until module-eval
       # rather than at `it ./dir` construction time. It no longer needs `lib` —
       # the reader is pure `builtins` — so the argument is ignored.
       module =
         _:
         let
-          files = leafs path;
+          files = leaves path;
         in
         {
           imports = if scoped == { } then files else map scoped-import files;
@@ -34,7 +34,7 @@ let
         // scoped
       );
 
-      leafs =
+      leaves =
         let
           listFilesRecursive =
             x:
@@ -250,13 +250,18 @@ let
             withLib = _lib: mergeAttrs { };
             initFilter = initf: mergeAttrs { inherit initf; };
             pipeTo = pipef: mergeAttrs { inherit pipef; };
-            leafs = mergeAttrs { pipef = (i: i); };
+            leaves = mergeAttrs { pipef = (i: i); };
+            leafs =
+              builtins.warn "import-tree.leafs has been deprecated. Use import-tree.leaves instead."
+                (mergeAttrs {
+                  pipef = (i: i);
+                });
 
             # Applies empty (for already path-configured trees)
             result = current [ ];
 
             # Return a list of all filtered files.
-            files = current.leafs.result;
+            files = current.leaves.result;
 
             # returns the original empty state
             new = callable;
