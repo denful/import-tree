@@ -29,19 +29,19 @@ Multiple `.map` calls compose left-to-right (the first map runs first):
 import-tree
   (i: i.map import)             # import each .nix file
   (i: i.map builtins.stringLength) # get the length of each result
-  (i: i.leafs ./dir)
+  (i: i.leaves ./dir)
 ```
 
 ### Using map Outside Module Evaluation
 
-When used with `.leafs` or `.pipeTo`, `.map` transforms paths into arbitrary values - not just modules:
+When used with `.leaves` or `.pipeTo`, `.map` transforms paths into arbitrary values - not just modules:
 
 ```nix
 # Read all .md files under a directory
 import-tree
   (i: i.initFilter (lib.hasSuffix ".md"))
   (i: i.map builtins.readFile)
-  (i: i.leafs ./docs)
+  (i: i.leaves ./docs)
 
 # => [ "# Title\n..." "# Other\n..." ]
 ```

@@ -8,24 +8,24 @@ description: Use import-tree to list files programmatically, without importing t
 `import-tree` doesn't have to produce module imports. You can use it to get a plain list of files:
 
 ```nix
-import-tree.leafs ./modules
+import-tree.leaves ./modules
 # => [ /path/to/modules/a.nix /path/to/modules/b.nix ]
 ```
 
-The tree reader is implemented with pure `builtins`, so `.leafs`, `.files` and `.pipeTo` work everywhere — including outside module evaluation — with no setup.
+The tree reader is implemented with pure `builtins`, so `.leaves`, `.files` and `.pipeTo` work everywhere — including outside module evaluation — with no setup.
 
-### leafs
+### leaves
 
-`.leafs` returns a configured import-tree that, when given a path, produces a flat list of discovered files:
+`.leaves` returns a configured import-tree that, when given a path, produces a flat list of discovered files:
 
 ```nix
-import-tree.leafs ./src
+import-tree.leaves ./src
 # => [ ./src/main.nix ./src/utils.nix ]
 ```
 
 ### files
 
-`.files` is a shortcut for `.leafs.result`: returns the list directly when paths have already been added via `.addPath`:
+`.files` is a shortcut for `.leaves.result`: returns the list directly when paths have already been added via `.addPath`:
 
 ```nix
 import-tree 

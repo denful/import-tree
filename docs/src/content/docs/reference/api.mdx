@@ -177,18 +177,18 @@ import-tree (it: it.addScoped { foo = 42 }) (it: it.addScoped { bar = 99 })
 
 ## Output
 
-### `.leafs`
+### `.leaves`
 
 Returns a configured import-tree that produces file lists instead of modules:
 
 ```nix
-import-tree.leafs ./modules
+import-tree.leaves ./modules
 # => [ ./modules/a.nix ./modules/b.nix ]
 ```
 
 ### `.files`
 
-Shorthand for `.leafs.result`:
+Shorthand for `.leaves.result`:
 
 ```nix
 (import-tree.addPath ./modules).files
@@ -196,7 +196,7 @@ Shorthand for `.leafs.result`:
 
 ### `.pipeTo <fn>`
 
-Like `.leafs` but pipes the result list through `fn`:
+Like `.leaves` but pipes the result list through `fn`:
 
 ```nix
 import-tree.pipeTo builtins.length ./modules

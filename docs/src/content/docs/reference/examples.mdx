@@ -63,7 +63,7 @@ import-tree
   (i: i.initFilter (lib.hasSuffix ".json"))
   (i: i.map builtins.readFile)
   (i: i.map builtins.fromJSON)
-  (i: i.leafs ./config)
+  (i: i.leaves ./config)
 # => list of parsed JSON objects
 ```
 

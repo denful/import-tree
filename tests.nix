@@ -7,8 +7,8 @@ let
 in
 {
   import-tree = {
-    leafs."test works without withLib (lib no longer required)" = {
-      expr = it.leafs ./tree/a;
+    leaves."test works without withLib (lib no longer required)" = {
+      expr = it.leaves ./tree/a;
       expected = [
         ./tree/a/a_b.nix
         ./tree/a/b/b_a.nix
@@ -16,13 +16,13 @@ in
       ];
     };
 
-    leafs."test withLib is a no-op kept for backward compatibility" = {
-      expr = (it.withLib lib).leafs ./tree/hello;
+    leaves."test withLib is a no-op kept for backward compatibility" = {
+      expr = (it.withLib lib).leaves ./tree/hello;
       expected = [ ];
     };
 
-    leafs."test only returns nix non-ignored files" = {
-      expr = lit.leafs ./tree/a;
+    leaves."test only returns nix non-ignored files" = {
+      expr = lit.leaves ./tree/a;
       expected = [
         ./tree/a/a_b.nix
         ./tree/a/b/b_a.nix
@@ -31,27 +31,27 @@ in
     };
 
     filter."test returns empty if no nix files with true predicate" = {
-      expr = (lit.filter (_: false)).leafs ./tree;
+      expr = (lit.filter (_: false)).leaves ./tree;
       expected = [ ];
     };
 
     filter."test only returns nix files with true predicate" = {
-      expr = (lit.filter (lib.hasSuffix "m.nix")).leafs ./tree;
+      expr = (lit.filter (lib.hasSuffix "m.nix")).leaves ./tree;
       expected = [ ./tree/a/b/m.nix ];
     };
 
     filter."test multiple `filter`s compose" = {
-      expr = ((lit.filter (lib.hasInfix "b/")).filter (lib.hasInfix "_")).leafs ./tree;
+      expr = ((lit.filter (lib.hasInfix "b/")).filter (lib.hasInfix "_")).leaves ./tree;
       expected = [ ./tree/a/b/b_a.nix ];
     };
 
     match."test returns empty if no files match regex" = {
-      expr = (lit.match "badregex").leafs ./tree;
+      expr = (lit.match "badregex").leaves ./tree;
       expected = [ ];
     };
 
     match."test returns files matching regex" = {
-      expr = (lit.match ".*/[^/]+_[^/]+\.nix").leafs ./tree;
+      expr = (lit.match ".*/[^/]+_[^/]+\.nix").leaves ./tree;
       expected = [
         ./tree/a/a_b.nix
         ./tree/a/b/b_a.nix
@@ -59,34 +59,34 @@ in
     };
 
     matchNot."test returns files not matching regex" = {
-      expr = (lit.matchNot ".*/[^/]+_[^/]+\.nix").leafs ./tree/a/b;
+      expr = (lit.matchNot ".*/[^/]+_[^/]+\.nix").leaves ./tree/a/b;
       expected = [
         ./tree/a/b/m.nix
       ];
     };
 
     match."test `match` composes with `filter`" = {
-      expr = ((lit.match ".*a_b.nix").filter (lib.hasInfix "/a/")).leafs ./tree;
+      expr = ((lit.match ".*a_b.nix").filter (lib.hasInfix "/a/")).leaves ./tree;
       expected = [ ./tree/a/a_b.nix ];
     };
 
     match."test multiple `match`s compose" = {
-      expr = ((lit.match ".*/[^/]+_[^/]+\.nix").match ".*b\.nix").leafs ./tree;
+      expr = ((lit.match ".*/[^/]+_[^/]+\.nix").match ".*b\.nix").leaves ./tree;
       expected = [ ./tree/a/a_b.nix ];
     };
 
     map."test transforms each matching file with function" = {
-      expr = (lit.map import).leafs ./tree/x;
+      expr = (lit.map import).leaves ./tree/x;
       expected = [ "z" ];
     };
 
     map."test `map` composes with `filter`" = {
-      expr = ((lit.filter (lib.hasInfix "/x")).map import).leafs ./tree;
+      expr = ((lit.filter (lib.hasInfix "/x")).map import).leaves ./tree;
       expected = [ "z" ];
     };
 
     map."test multiple `map`s compose" = {
-      expr = ((lit.map import).map builtins.stringLength).leafs ./tree/x;
+      expr = ((lit.map import).map builtins.stringLength).leaves ./tree/x;
       expected = [ 1 ];
     };
 
@@ -106,7 +106,7 @@ in
 
     addPath."test `addPath` identity" = {
       expr = ((lit.addPath ./tree/x).addPath ./tree/a/b).files;
-      expected = lit.leafs [
+      expected = lit.leaves [
         ./tree/x
         ./tree/a/b
       ];
@@ -125,7 +125,7 @@ in
     };
 
     initFilter."test can change the initial filter to look for other file types" = {
-      expr = (lit.initFilter (p: lib.hasSuffix ".txt" p)).leafs [ ./tree/a ];
+      expr = (lit.initFilter (p: lib.hasSuffix ".txt" p)).leaves [ ./tree/a ];
       expected = [ ./tree/a/a.txt ];
     };
 
@@ -185,11 +185,11 @@ in
     };
 
     import-tree."test does not break if given a path to a file instead of a directory." = {
-      expr = lit.leafs ./tree/x/y.nix;
+      expr = lit.leaves ./tree/x/y.nix;
       expected = [ ./tree/x/y.nix ];
     };
 
-    import-tree."test returns a module with a single imported nested module having leafs" = {
+    import-tree."test returns a module with a single imported nested module having leaves" = {
       expr =
         let
           oneElement = arr: if lib.length arr == 1 then lib.elemAt arr 0 else throw "Expected one element";
@@ -219,7 +219,7 @@ in
     };
 
     import-tree."test take as arg anything path convertible" = {
-      expr = lit.leafs [
+      expr = lit.leaves [
         {
           outPath = ./tree/modules/hello-world;
         }
@@ -245,7 +245,7 @@ in
     };
 
     import-tree."test can take other import-trees as if they were paths" = {
-      expr = (lit.filter (lib.hasInfix "mod")).leafs [
+      expr = (lit.filter (lib.hasInfix "mod")).leaves [
         (it.addPath ./tree/modules/hello-option)
         ./tree/modules/hello-world
       ];
@@ -255,8 +255,8 @@ in
       ];
     };
 
-    leafs."test loads from hidden directory but excludes sub-hidden" = {
-      expr = lit.leafs ./tree/a/b/_c;
+    leaves."test loads from hidden directory but excludes sub-hidden" = {
+      expr = lit.leaves ./tree/a/b/_c;
       expected = [ ./tree/a/b/_c/d/e.nix ];
     };
 
@@ -271,7 +271,7 @@ in
     };
 
     combinator."test combinator syntax to compose import-tree" = {
-      expr = it (it: it.withLib lib) (it: it.leafs) ./tree/_scoped;
+      expr = it (it: it.withLib lib) (it: it.leaves) ./tree/_scoped;
       expected = [ ./tree/_scoped/foo.nix ];
     };
   };

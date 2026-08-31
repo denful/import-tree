@@ -13,12 +13,12 @@ Combinator syntax allows you to pass functions to `import-tree` to configure and
 # Without combinators (verbose)
 let
   configured = import-tree.map import;
-  leafs = configured.leafs;
+  leaves = configured.leaves;
 in
-leafs ./modules
+leaves ./modules
 
 # With combinators (terse)
-import-tree (it: it.map import) (it: it.leafs) ./modules
+import-tree (it: it.map import) (it: it.leaves) ./modules
 ```
 
 ## How It Works
@@ -50,7 +50,7 @@ Get a filtered file list in one expression:
 ```nix
 import-tree
   (it: it.filter (lib.hasSuffix "mod.nix"))
-  (it: it.leafs)
+  (it: it.leaves)
   ./modules
 ```
 
@@ -74,7 +74,7 @@ let
 in
 custom
   (it: it.nixFilesOnly)
-  (it: it.leafs)
+  (it: it.leaves)
   ./src
 ```
 
