@@ -278,14 +278,48 @@ in
               (lit.addScoped {
                 foo = 22;
                 bar = "44";
+                builtins = {
+                  hello = "world";
+                };
               })
               ./tree/_scoped
             )
           ];
-        }).config.scoped;
+        }).config.builtins.scoped;
       expected = {
         foo = 22;
         bar = "44";
+        builtins = {
+          hello = "world";
+        };
+      };
+    };
+
+    scoped."test settings builtins via scopedImport" = {
+      expr =
+        (lib.evalModules {
+          modules = [
+            (
+              (lit.addScoped {
+                foo = 22;
+                bar = "44";
+                builtins = {
+                  hello = "world";
+                };
+              })
+              ./tree/_scoped
+            )
+          ];
+        }).config.builtins;
+      expected = {
+        hello = "world";
+        scoped = {
+          foo = 22;
+          bar = "44";
+          builtins = {
+            hello = "world";
+          };
+        };
       };
     };
 
@@ -304,7 +338,7 @@ in
             ];
           };
         in
-        eval.config.nixPath == [ ] && eval.config.__nixPath == [ ];
+        eval.config.builtins.nixPath == [ ] && eval.config.__nixPath == [ ];
       expected = true;
     };
 

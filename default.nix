@@ -28,18 +28,26 @@ let
 
       # Like builtins.scopedImport but:
       # - include scope argument in builtins as `builtins.scoped`, for potential reuse in nested invocations
-      # - empty `__nixPath` and `builtins.nixPath`
+      # - empty `__nixPath` and `builtins.nixPath` (unless explictely set in `scoped` argument)
       scoped-import =
         scoped:
         builtins.scopedImport (
           {
-            builtins = builtins // {
-              nixPath = [ ];
-              inherit scoped;
-            };
             __nixPath = [ ];
           }
           // scoped
+          // {
+            builtins =
+              scoped.builtins or (
+                builtins
+                // {
+                  nixPath = [ ];
+                }
+              )
+              // {
+                inherit scoped;
+              };
+          }
         );
 
       scoped-import-module = file: {
