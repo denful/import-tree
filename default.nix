@@ -11,7 +11,7 @@ let
     }:
     path:
     let
-      result = if pipef == null then { imports = [ module ]; } else pipef (leaves path);
+      result = if pipef == null then module else pipef (leaves path);
 
       # module stays a function: callers may apply it as a module function, and
       # keeping it a lambda defers the tree read (`leaves path`) until module-eval
@@ -219,10 +219,13 @@ let
 
   functor =
     self: arg:
+
     if builtins.isFunction arg && builtins.functionArgs arg == { } then
       arg self # arg is a combinator pass the self import-tree obj
+    else if inModuleEval arg then
+      perform self.__config [ ] arg
     else
-      perform self.__config (if inModuleEval arg then [ ] else arg);
+      perform self.__config arg;
 
   callable =
     let
