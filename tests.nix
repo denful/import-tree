@@ -254,6 +254,17 @@ in
       ];
     };
 
+    import-tree."test can take other import-trees as if they were paths - hidden paths variant" = {
+      expr = lit.leaves [
+        (it.addPath [ ./tree/a/b/_c ])
+        ./tree/modules/hello-world
+      ];
+      expected = [
+        ./tree/a/b/_c/d/e.nix
+        ./tree/modules/hello-world/mod.nix
+      ];
+    };
+
     import-tree."test can be used in submodule" = {
       expr =
         (lib.evalModules {
@@ -272,6 +283,11 @@ in
 
     leaves."test loads from hidden directory but excludes sub-hidden" = {
       expr = lit.leaves ./tree/a/b/_c;
+      expected = [ ./tree/a/b/_c/d/e.nix ];
+    };
+
+    leaves."test loads root file from hidden directory" = {
+      expr = lit.leaves ./tree/a/b/_c/d/e.nix;
       expected = [ ./tree/a/b/_c/d/e.nix ];
     };
 

@@ -60,16 +60,6 @@ let
 
       leaves =
         let
-          listFilesRecursive =
-            x:
-            if isImportTree x then
-              x.files
-            else if hasOutPath x then
-              listFilesRecursive x.outPath
-            else if isDirectory x then
-              listDirFilesRecursive x
-            else
-              [ x ];
 
           nixFilter = andNot (hasInfix "/_") (hasSuffix ".nix");
 
@@ -79,43 +69,29 @@ let
 
           otherFilter = and filterf (if initf != null then initf else (_: true));
 
-          filter = x: if isPathLike x then pathFilter x else otherFilter x;
-
-          isFileRelative =
-            root:
-            { file, rel }:
-            if file != null && hasPrefix root file then
-              {
-                file = null;
-                rel = removePrefix root file;
-              }
+          # Filter an explicit user supplied path:
+          filterFiles =
+            x:
+            if hasOutPath x then
+              filterFiles x.outPath
+            else if isImportTree x then
+              # Use the foreign import-tree filtering so that relative path are correctly handled:
+              (x.filter filterf).files
+            else if isPathLike x then
+              if builtins.readFileType x == "directory" then
+                let
+                  dir = toString x;
+                  # Apply pathFilter to relative path from the user-supplied directory:
+                  relativize = file: removePrefix dir (toString file);
+                in
+                builtins.filter (compose pathFilter relativize) (listDirFilesRecursive x)
+              else
+                # For explicit user-supplied (non-directory) files, ignore filter:
+                x
+            else if otherFilter x then
+              x
             else
-              { inherit file rel; };
-          getFileRelative = { file, rel }: if rel == null then file else rel;
-
-          # Strip the first matching root-directory prefix from a file, yielding a
-          # path relative to that root (or the file itself if none match). Folds the
-          # `{ file, rel }` state directly over the roots — once a root matches,
-          # `file` becomes null and later roots are no-ops.
-          makeRelative =
-            roots:
-            let
-              dirs = builtins.map builtins.toString (builtins.filter isDirectory (flatten roots));
-            in
-            file:
-            getFileRelative (
-              builtins.foldl' (acc: root: isFileRelative root acc) {
-                file = builtins.toString file;
-                rel = null;
-              } dirs
-            );
-
-          rootRelative =
-            roots:
-            let
-              mkRel = makeRelative roots;
-            in
-            x: if isPathLike x then mkRel x else x;
+              [ ];
         in
         root:
         let
@@ -123,13 +99,9 @@ let
             paths
             root
           ];
-          files = flatten (map listFilesRecursive roots);
-          relativize = rootRelative [
-            paths
-            root
-          ];
+          files = flatten (map filterFiles roots);
         in
-        map mapf (builtins.filter (compose filter relativize) files);
+        map mapf files;
 
     in
     result;
@@ -138,9 +110,6 @@ let
 
   # lib.lists.flatten
   flatten = x: if builtins.isList x then builtins.concatMap flatten x else [ x ];
-
-  # lib.strings.hasPrefix
-  hasPrefix = pre: s: builtins.substring 0 (builtins.stringLength pre) s == pre;
 
   # lib.strings.removePrefix
   removePrefix =
@@ -207,8 +176,6 @@ let
     attrs: k: f:
     attrs // { ${k} = f attrs.${k}; };
 
-  isDirectory = and (x: builtins.readFileType x == "directory") isPathLike;
-
   isPathLike = x: builtins.isPath x || builtins.isString x || hasOutPath x;
 
   hasOutPath = and (x: x ? outPath) builtins.isAttrs;
@@ -232,7 +199,7 @@ let
       initial = {
         # Accumulated configuration
         api = { };
-        mapf = (i: i);
+        mapf = i: i;
         filterf = _: true;
         paths = [ ];
         scoped = { };
@@ -277,11 +244,11 @@ let
             withLib = _lib: mergeAttrs { };
             initFilter = initf: mergeAttrs { inherit initf; };
             pipeTo = pipef: mergeAttrs { inherit pipef; };
-            leaves = mergeAttrs { pipef = (i: i); };
+            leaves = mergeAttrs { pipef = i: i; };
             leafs =
               builtins.warn "import-tree.leafs has been deprecated. Use import-tree.leaves instead."
                 (mergeAttrs {
-                  pipef = (i: i);
+                  pipef = i: i;
                 });
 
             # Applies empty (for already path-configured trees)
